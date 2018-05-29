@@ -1,0 +1,62 @@
+
+<!DOCTYPE html>
+
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="https://www.paypalobjects.com/api/checkout.js"></script>
+</head>
+
+<body>
+    <div id="paypal-button-container"></div>
+
+    <script>
+        paypal.Button.render({
+
+            env: 'sandbox', // sandbox | production
+
+            // PayPal Client IDs - replace with your own
+            // Create a PayPal app: https://developer.paypal.com/developer/applications/create
+            client: {
+                sandbox:    'YOUR KEY',
+                production: '<insert production client id>'
+            },
+
+            // Show the buyer a 'Pay Now' button in the checkout flow
+            commit: true,
+
+            // payment() is called when the button is clicked
+            payment: function(data, actions) {
+                // Set up a url on your server to create the payment
+                var CREATE_URL = '/payment';
+
+                // Make a call to your server to set up the payment
+                return paypal.request.post(CREATE_URL)
+                    .then(function(res) {
+                        console.log(res);
+                        return res.token;
+                    });
+            },
+
+            // onAuthorize() is called when the buyer approves the payment
+            onAuthorize: function(data, actions) {
+                console.log(actions);
+                console.log(data);
+
+                var EXECUTE_URL = '/execute';
+                var data = {
+                    paymentID: data.paymentToken
+                };
+
+                // Make a call to your server to execute the payment
+                return paypal.request.post(EXECUTE_URL, data)
+                    .then(function (res) {
+                        window.alert('Payment Complete!');
+                    });
+            }
+
+        }, '#paypal-button-container');
+
+    </script>
+</body>
+    
